@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CYD Control">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="/manifest.json">
+    <title>CYD Control Center</title>
+    <style>
+        /* ══════════════════════════════════════
+           المتغيرات الأساسية — نفس الملف الأصلي
+           ══════════════════════════════════════ */
+        :root {
+            --bg-color:     #0a0a0a;
+            --card-bg:      #1a1a1a;
+            --card-bg2:     #222230;
+            --accent-color: #007aff;
+            --accent2:      #5856d6;
+            --text-color:   #ffffff;
+            --text-muted:   #888899;
+            --danger:       #ff3b30;
+            --success:      #4cd964;
+            --warn:         #ff9500;
+            --border:       #2a2a3a;
+            --radius:       15px;
+        }
+
+```
+    * { box-sizing: border-box; margin: 0; padding: 0;
+        -webkit-tap-highlight-color: transparent; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        padding: 20px;
+        padding-bottom: 40px;
+        padding-top: calc(20px + env(safe-area-inset-top));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .container { width: 100%; max-width: 420px; }
+
+    /* ── أيقونة وعنوان (من الأصلي) ── */
+    .app-icon {
+        width: 64px; height: 64px;
+        background: linear-gradient(135deg, var(--accent-color), var(--accent2));
+        border-radius: 16px;
+        margin: 0 auto 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 0 28px rgba(0,122,255,.35);
+    }
+    h1 {
+        font-size: 24px; margin-bottom: 8px;
+        text-align: center; color: var(--accent-color);
+    }
+    .subtitle {
+        text-align: center; font-size: 13px;
+        color: var(--text-muted); margin-bottom: 28px;
+    }
+
+    /* ── البطاقة (من الأصلي + تحسين) ── */
+    .card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 15px rgba(0,0,0,.5);
+        border: 1px solid var(--border);
+    }
+    .card h2 {
+        font-size: 16px; margin-top: 0; margin-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+
+    .control-group { display: flex; flex-direction: column; gap: 14px; }
+
+    /* ── الأزرار (من الأصلي + موحّدة) ── */
+    .btn {
+        background: var(--accent-color);
+        border: none; color: white;
+        padding: 13px 16px;
+        border-radius: 10px;
+        font-weight: 600; font-size: 15px;
+        cursor: pointer;
+        transition: opacity .2s, transform .1s;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn:active { transform: scale(0.96); opacity: .85; }
+    .btn-ghost {
+        background: #2a2a3a;
+        border: 1px solid var(--border);
+    }
+    .btn-danger { background: rgba(255,59,48,.15); color: var(--danger);
+        border: 1px solid rgba(255,59,48,.3); }
+    .btn-success { background: rgba(76,217,100,.15); color: var(--success);
+        border: 1px solid rgba(76,217,100,.3); }
+    .btn-row { display: flex; gap: 10px; }
+    .btn-row .btn { flex: 1; }
+
+    /* ── الـ status (من الأصلي) ── */
+    .status {
+        display: flex; justify-content: space-between;
+        font-size: 14px; color: var(--text-muted);
+        align-items: center;
+    }
+    .badge {
+        font-size: 12px; font-weight: 600; padding: 3px 10px;
+        border-radius: 20px;
+    }
+    .badge-on  { background: rgba(76,217,100,.15); color: var(--success); }
+    .badge-off { background: rgba(255,59,48,.15);  color: var(--danger);  }
+    .badge-warn{ background: rgba(255,149,0,.15);  color: var(--warn);    }
+
+    /* ══════════════════════════════════════
+       ① السطوع — محسّن
+       ══════════════════════════════════════ */
+    .slider-row { display: flex; align-items: center; gap: 12px; }
+    .slider-row span { font-size: 18px; min-width: 22px; text-align: center; }
+    input[type="range"] {
+        flex: 1; -webkit-appearance: none; height: 6px;
+        border-radius: 3px; background: #333;
+        accent-color: var(--accent-color);
+        background-image: linear-gradient(var(--accent-color), var(--accent-color));
+        background-size: 50% 100%; background-repeat: no-repeat;
+        outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; width: 22px; height: 22px;
+        border-radius: 50%; background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,.5); cursor: pointer;
+    }
+    .slider-val {
+        font-size: 14px; font-weight: 700;
+        color: var(--accent-color); min-width: 38px; text-align: center;
+    }
+
+    /* ══════════════════════════════════════
+       ② Color Picker — جديد
+       ══════════════════════════════════════ */
+    .color-section { display: flex; flex-direction: column; gap: 12px; }
+    .color-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cdot {
+        width: 34px; height: 34px; border-radius: 50%;
+        cursor: pointer; border: 3px solid transparent;
+        transition: transform .15s, border-color .15s;
+    }
+    .cdot:active { transform: scale(.88); }
+    .cdot.active  { border-color: #fff; transform: scale(1.1); }
+    .color-picker-row {
+        display: flex; align-items: center; gap: 12px;
+    }
+    #colorPicker {
+        width: 44px; height: 44px; border: none;
+        border-radius: 10px; cursor: pointer;
+        background: none; padding: 0; overflow: hidden;
+    }
+    .color-hex-label {
+        background: #2a2a3a; border: 1px solid var(--border);
+        border-radius: 8px; padding: 6px 12px;
+        font-size: 13px; font-family: monospace;
+        color: var(--text-muted); flex: 1; text-align: center;
+    }
+    .btn-apply-color {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent2));
+        font-size: 13px; padding: 8px 16px; border-radius: 8px;
+    }
+
+    /* ══════════════════════════════════════
+       ③ WiFi Manager — جديد
+       ══════════════════════════════════════ */
+    .wifi-current {
+        background: #2a2a3a; border-radius: 10px; padding: 12px 14px;
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    .wifi-name { font-size: 15px; font-weight: 600; }
+    .wifi-sub  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .field-label { font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
+    .field-input {
+        width: 100%; background: #2a2a3a;
+        border: 1px solid var(--border);
+        border-radius: 10px; padding: 12px 14px;
+        color: var(--text-color); font-size: 15px;
+        outline: none; transition: border-color .2s;
+    }
+    .field-input:focus { border-color: var(--accent-color); }
+    .wifi-fields { display: flex; flex-direction: column; gap: 10px; }
+    .scan-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .scan-item {
+        background: #2a2a3a; border: 1px solid var(--border);
+        border-radius: 8px; padding: 10px 14px;
+        display: flex; align-items: center; justify-content: space-between;
+        cursor: pointer; transition: background .15s;
+    }
+    .scan-item:active { background: #333; }
+    .scan-rssi { font-size: 12px; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════
+       ④ Security Log — جديد
+       ══════════════════════════════════════ */
+    .log-stats {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 10px; margin-bottom: 14px;
+    }
+    .stat-box {
+        background: #2a2a3a; border-radius: 10px;
+        padding: 12px; text-align: center;
+        border: 1px solid var(--border);
+    }
+    .stat-num { font-size: 26px; font-weight: 700; }
+    .stat-lbl { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .log-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+    .log-item {
+        background: #2a2a3a; border-radius: 8px;
+        padding: 10px 12px;
+        display: flex; align-items: flex-start; gap: 10px;
+        border-right: 3px solid transparent;
+    }
+    .log-item.ok     { border-right-color: var(--success); }
+    .log-item.fail   { border-right-color: var(--danger); }
+    .log-item.warn   { border-right-color: var(--warn); }
+    .log-icon  { font-size: 16px; min-width: 20px; }
+    .log-text  { font-size: 13px; flex: 1; }
+    .log-time  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ══════════════════════════════════════
+       ⑤ OTA — جديد
+       ══════════════════════════════════════ */
+    .ota-info {
+        background: rgba(0,122,255,.08); border: 1px solid rgba(0,122,255,.2);
+        border-radius: 10px; padding: 12px 14px;
+        font-size: 13px; color: var(--text-muted);
+        margin-bottom: 12px; line-height: 1.6;
+    }
+    .ota-progress {
+        height: 6px; border-radius: 3px; background: #333;
+        overflow: hidden; margin-top: 10px; display: none;
+    }
+    .ota-bar {
+        height: 100%; width: 0%;
+        background: linear-gradient(90deg, var(--accent-color), var(--accent2));
+        transition: width .3s;
+    }
+
+    /* ══════════════════════════════════════
+       WebSocket badge
+       ══════════════════════════════════════ */
+    #wsBadge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 12px; padding: 4px 10px; border-radius: 20px;
+        background: rgba(76,217,100,.12); color: var(--success);
+        border: 1px solid rgba(76,217,100,.3);
+        margin-bottom: 20px;
+    }
+    #wsBadge.off {
+        background: rgba(255,59,48,.1); color: var(--danger);
+        border-color: rgba(255,59,48,.25);
+    }
+    #wsBadge .dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: currentColor; animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── Toast ── */
+    #toast {
+        position: fixed; bottom: 28px; left: 50%;
+        transform: translateX(-50%) translateY(16px);
+        background: #2a2a3a; border: 1px solid var(--border);
+        border-radius: 12px; padding: 12px 22px;
+        font-size: 14px; opacity: 0;
+        transition: all .3s; z-index: 999;
+        pointer-events: none; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); margin: 8px 0; }
+</style>
+```
+
+</head>
+<body>
+<div class="container">
+
+```
+<!-- ══ رأس الصفحة (من الأصلي) ══ -->
+<div class="app-icon">🛡️</div>
+<h1>مركز تحكم CYD</h1>
+<p class="subtitle">CYD Control Center — v2.0</p>
+
+<!-- مؤشر الاتصال -->
+<div id="wsBadge" class="off">
+    <span class="dot"></span>
+    <span id="wsLabel">جاري الاتصال...</span>
+</div>
+
+<!-- ══ ① الأمان المزدوج (من الأصلي — محسّن) ══ -->
+<div class="card">
+    <h2>🔐 الأمان المزدوج</h2>
+    <div class="control-group">
+        <div class="status">
+            <span>حالة الربط:</span>
+            <span class="badge badge-on" id="linkStatus">نشط ✅</span>
+        </div>
+        <div class="status">
+            <span>آخر فتح ناجح:</span>
+            <span style="font-size:13px;" id="lastUnlock">—</span>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-success" onclick="sendCommand('unlock')">🔓 فتح القفل</button>
+            <button class="btn btn-danger"  onclick="sendCommand('lock')">👻 وضع الشبح</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ② السطوع (من الأصلي — محسّن بالكامل) ══ -->
+<div class="card">
+    <h2>☀️ السطوع</h2>
+    <div class="slider-row">
+        <span>🌑</span>
+        <input type="range" id="brightSlider" min="10" max="255" value="180"
+               oninput="onBrightChange(this.value)">
+        <span>🌕</span>
+        <span class="slider-val" id="brightVal">70%</span>
+    </div>
+</div>
+
+<!-- ══ ③ Color Picker (يستبدل أزرار الألوان القديمة) ══ -->
+<div class="card">
+    <h2>🎨 لون الثيم</h2>
+    <div class="color-section">
+        <!-- ألوان جاهزة -->
+        <div class="color-presets" id="colorPresets">
+            <div class="cdot active" style="background:#007aff" data-hex="#007aff" onclick="pickPreset(this)"></div>
+            <div class="cdot" style="background:#5856d6" data-hex="#5856d6" onclick="pickPreset(this)"></div>
+            <div class="cdot" style="background:#ff2d55" data-hex="#ff2d55" onclick="pickPreset(this)"></div>
+            <div class="cdot" style="background:#ff9500" data-hex="#ff9500" onclick="pickPreset(this)"></div>
+            <div class="cdot" style="background:#4cd964" data-hex="#4cd964" onclick="pickPreset(this)"></div>
+            <div class="cdot" style="background:#ff3b30" data-hex="#ff3b30" onclick="pickPreset(this)"></div>
+            <div class="cdot" style="background:#5ac8fa" data-hex="#5ac8fa" onclick="pickPreset(this)"></div>
+        </div>
+        <!-- Color Picker حر -->
+        <div class="color-picker-row">
+            <input type="color" id="colorPicker" value="#007aff"
+                   onchange="onColorPick(this.value)">
+            <div class="color-hex-label" id="colorHex">#007aff</div>
+            <button class="btn btn-apply-color" onclick="applyColor()">تطبيق ✓</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ④ WiFi Manager (جديد كلياً) ══ -->
+<div class="card">
+    <h2>📶 إدارة الواي فاي</h2>
+    <div class="control-group">
+        <!-- الشبكة الحالية -->
+        <div class="wifi-current">
+            <div>
+                <div class="wifi-name" id="currentSSID">جاري التحميل...</div>
+                <div class="wifi-sub" id="currentIP">—</div>
+            </div>
+            <span class="badge badge-on" id="wifiStatus">متصل</span>
+        </div>
+
+        <!-- قائمة الشبكات المتاحة -->
+        <button class="btn btn-ghost" onclick="scanWifi()">🔍 مسح الشبكات المتاحة</button>
+        <div class="scan-list" id="scanList" style="display:none"></div>
+
+        <div class="divider"></div>
+
+        <!-- إضافة شبكة يدوياً -->
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">إضافة شبكة يدوياً:</div>
+        <div class="wifi-fields">
+            <div>
+                <div class="field-label">اسم الشبكة (SSID)</div>
+                <input class="field-input" id="wifiSSID" type="text" placeholder="اسم الشبكة">
+            </div>
+            <div>
+                <div class="field-label">كلمة المرور</div>
+                <input class="field-input" id="wifiPass" type="password" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="saveWifi()">💾 حفظ والاتصال</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ⑤ Security Log (جديد كلياً) ══ -->
+<div class="card">
+    <h2>📋 سجل الأمان</h2>
+    <!-- إحصائيات سريعة -->
+    <div class="log-stats">
+        <div class="stat-box">
+            <div class="stat-num" id="statUnlocks" style="color:var(--success)">0</div>
+            <div class="stat-lbl">مرات الفتح</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-num" id="statFails" style="color:var(--danger)">0</div>
+            <div class="stat-lbl">محاولات فاشلة</div>
+        </div>
+    </div>
+    <!-- سجل الأحداث -->
+    <div class="log-list" id="logList">
+        <div class="log-item warn">
+            <span class="log-icon">⚠️</span>
+            <div>
+                <div class="log-text">في انتظار الاتصال بالجهاز</div>
+                <div class="log-time">—</div>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:12px;font-size:13px"
+            onclick="clearLog()">🗑 مسح السجل</button>
+</div>
+
+<!-- ══ ⑥ OTA Update (جديد) ══ -->
+<div class="card">
+    <h2>🔄 تحديث لاسلكي (OTA)</h2>
+    <div class="ota-info">
+        يمكنك رفع ملف <code>.bin</code> جديد مباشرة على الجهاز بدون كابل.<br>
+        تأكد من أن الجهاز متصل بنفس شبكة الواي فاي.
+    </div>
+    <div class="control-group">
+        <input type="file" id="otaFile" accept=".bin"
+               style="color:var(--text-muted);font-size:13px">
+        <button class="btn" onclick="startOTA()">⬆️ رفع التحديث</button>
+        <div class="ota-progress" id="otaProgress">
+            <div class="ota-bar" id="otaBar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ⑦ إعدادات النظام (من الأصلي) ══ -->
+<div class="card">
+    <h2>⚙️ إعدادات النظام</h2>
+    <div class="control-group">
+        <div class="status">
+            <span>Free Heap</span>
+            <span id="sysHeap" style="font-family:monospace">—</span>
+        </div>
+        <div class="status">
+            <span>Uptime</span>
+            <span id="sysUptime" style="font-family:monospace">—</span>
+        </div>
+        <div class="status">
+            <span>الإصدار</span>
+            <span style="font-family:monospace;color:var(--accent-color)">v2.0</span>
+        </div>
+        <div class="divider"></div>
+        <button class="btn btn-ghost" onclick="location.reload()">🔁 تحديث البيانات</button>
+        <button class="btn btn-danger"  onclick="restartDevice()">⚡ إعادة تشغيل الجهاز</button>
+    </div>
+</div>
+```
+
+</div><!-- /container -->
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════════
+     JavaScript — كل المنطق
+══════════════════════════════════════════════ -->
+
+<script>
+// ════════════════════════════════════════════
+//  الإعدادات الأساسية
+// ════════════════════════════════════════════
+// المفتاح السري — يجب أن يكون نفس SECRET_KEY في كود الـ C++
+const SECRET_KEY = 'cyd-secret-2025';
+
+// الـ Token المحفوظ بعد تسجيل الدخول
+let authToken = localStorage.getItem('cyd_token') || '';
+
+// ════════════════════════════════════════════
+//  WebSocket
+// ════════════════════════════════════════════
+let ws, wsReady = false;
+
+function connectWS() {
+    const host = window.location.host;
+    ws = new WebSocket(`ws://${host}/ws`);
+
+    ws.onopen = () => {
+        wsReady = true;
+        setBadge(true);
+        toast('🔗 متصل بالجهاز');
+        addLog('ok', '🔗 تم الاتصال بالجهاز');
+        fetchStatus(); // جلب الحالة فور الاتصال
+    };
+
+    ws.onmessage = (e) => {
+        try {
+            const msg = JSON.parse(e.data);
+            handleWSMessage(msg);
+        } catch(_) {}
+    };
+
+    ws.onclose = () => {
+        wsReady = false;
+        setBadge(false);
+        setTimeout(connectWS, 3000); // إعادة المحاولة
+    };
+
+    ws.onerror = () => ws.close();
+}
+
+function wsSend(obj) {
+    // أضف التوقيع الأمني لكل رسالة
+    obj.token = authToken;
+    obj.ts    = Date.now();
+    if (ws && ws.readyState === WebSocket.OPEN)
+        ws.send(JSON.stringify(obj));
+}
+
+function handleWSMessage(msg) {
+    // تحديث الحالة الواردة من الجهاز
+    if (msg.type === 'state') {
+        if (msg.brightness !== undefined) syncBrightness(msg.brightness);
+        if (msg.color)                    syncColor(msg.color);
+        if (msg.ssid)                     document.getElementById('currentSSID').textContent = msg.ssid;
+        if (msg.ip)                       document.getElementById('currentIP').textContent = msg.ip;
+        if (msg.heap)                     document.getElementById('sysHeap').textContent = (msg.heap/1024).toFixed(1)+' KB';
+        if (msg.uptime)                   document.getElementById('sysUptime').textContent = fmtUptime(msg.uptime);
+        if (msg.unlocks !== undefined)    document.getElementById('statUnlocks').textContent = msg.unlocks;
+        if (msg.fails !== undefined)      document.getElementById('statFails').textContent = msg.fails;
+        if (msg.lastUnlock)               document.getElementById('lastUnlock').textContent = msg.lastUnlock;
+    }
+    if (msg.type === 'log')    addLog(msg.level, msg.text);
+    if (msg.type === 'scan')   showScanResults(msg.networks);
+    if (msg.type === 'alert')  toast(msg.text);
+}
+
+function setBadge(on) {
+    const b = document.getElementById('wsBadge');
+    const l = document.getElementById('wsLabel');
+    b.className = on ? '' : 'off';
+    l.textContent = on ? 'متصل بالجهاز ✓' : 'غير متصل...';
+}
+
+// ════════════════════════════════════════════
+//  جلب الحالة الأولية (HTTP)
+// ════════════════════════════════════════════
+async function fetchStatus() {
+    try {
+        const r = await fetch('/api/status', {
+            headers: { 'X-Token': authToken }
+        });
+        if (!r.ok) return;
+        const d = await r.json();
+        handleWSMessage({ type: 'state', ...d });
+    } catch(_) {}
+}
+
+// ════════════════════════════════════════════
+//  ① الأوامر الأمنية (من الأصلي — محسّن)
+// ════════════════════════════════════════════
+function sendCommand(cmd) {
+    if (!wsReady) { toast('⚠️ غير متصل بالجهاز'); return; }
+
+    // تشفير بسيط: HMAC-like signature
+    const sig = btoa(cmd + ':' + SECRET_KEY + ':' + Math.floor(Date.now()/1000));
+    wsSend({ cmd: 'security', action: cmd, sig });
+
+    const msg = cmd === 'unlock' ? '🔓 تم إرسال أمر الفتح' : '👻 تم تفعيل وضع الشبح';
+    toast(msg);
+    addLog(cmd === 'unlock' ? 'ok' : 'warn', msg);
+}
+
+// ════════════════════════════════════════════
+//  ② السطوع (من الأصلي — مكتمل)
+// ════════════════════════════════════════════
+let brightTimer;
+function onBrightChange(val) {
+    const pct = Math.round(val * 100 / 255);
+    document.getElementById('brightVal').textContent = pct + '%';
+    // تحديث مظهر الشريط
+    const slider = document.getElementById('brightSlider');
+    slider.style.backgroundSize = ((val-10)*100/245) + '% 100%';
+    // إرسال بعد توقف 80ms (throttle)
+    clearTimeout(brightTimer);
+    brightTimer = setTimeout(() => {
+        wsSend({ cmd: 'brightness', value: parseInt(val) });
+    }, 80);
+}
+
+function syncBrightness(val) {
+    document.getElementById('brightSlider').value = val;
+    onBrightChange(val);
+}
+
+// ════════════════════════════════════════════
+//  ③ Color Picker (جديد — يستبدل أزرار الألوان)
+// ════════════════════════════════════════════
+let pendingColor = '#007aff';
+
+function pickPreset(el) {
+    document.querySelectorAll('.cdot').forEach(d => d.classList.remove('active'));
+    el.classList.add('active');
+    pendingColor = el.dataset.hex;
+    document.getElementById('colorPicker').value = pendingColor;
+    document.getElementById('colorHex').textContent = pendingColor;
+}
+
+function onColorPick(hex) {
+    pendingColor = hex;
+    document.getElementById('colorHex').textContent = hex;
+    document.querySelectorAll('.cdot').forEach(d => d.classList.remove('active'));
+}
+
+function applyColor() {
+    wsSend({ cmd: 'color', value: pendingColor });
+    // تحديث الـ CSS accent فوراً
+    document.documentElement.style.setProperty('--accent-color', pendingColor);
+    toast('🎨 تم تطبيق اللون ' + pendingColor);
+    addLog('ok', '🎨 تغيير اللون إلى ' + pendingColor);
+}
+
+function syncColor(hex) {
+    pendingColor = hex;
+    document.getElementById('colorPicker').value = hex;
+    document.getElementById('colorHex').textContent = hex;
+    document.documentElement.style.setProperty('--accent-color', hex);
+}
+
+// ════════════════════════════════════════════
+//  ④ WiFi Manager (جديد)
+// ════════════════════════════════════════════
+function scanWifi() {
+    if (!wsReady) { toast('⚠️ غير متصل'); return; }
+    wsSend({ cmd: 'wifi_scan' });
+    toast('🔍 جاري مسح الشبكات...');
+}
+
+function showScanResults(networks) {
+    const list = document.getElementById('scanList');
+    list.style.display = 'flex';
+    list.innerHTML = '';
+    if (!networks || networks.length === 0) {
+        list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center">لم يتم العثور على شبكات</div>';
+        return;
+    }
+    networks.forEach(n => {
+        const el = document.createElement('div');
+        el.className = 'scan-item';
+        el.innerHTML = `
+            <div>
+                <div style="font-size:14px;font-weight:600">${n.ssid}</div>
+                <div class="scan-rssi">إشارة: ${n.rssi} dBm · ${n.secure ? '🔒 محمية' : '🔓 مفتوحة'}</div>
+            </div>
+            <span style="font-size:18px">${getRSSIIcon(n.rssi)}</span>`;
+        el.onclick = () => {
+            document.getElementById('wifiSSID').value = n.ssid;
+            document.getElementById('wifiPass').focus();
+            list.style.display = 'none';
+        };
+        list.appendChild(el);
+    });
+}
+
+function getRSSIIcon(rssi) {
+    if (rssi > -50) return '📶';
+    if (rssi > -70) return '📶';
+    return '📡';
+}
+
+async function saveWifi() {
+    const ssid = document.getElementById('wifiSSID').value.trim();
+    const pass = document.getElementById('wifiPass').value;
+    if (!ssid) { toast('⚠️ أدخل اسم الشبكة'); return; }
+    try {
+        const r = await fetch('/api/wifi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Token': authToken },
+            body: JSON.stringify({ ssid, pass })
+        });
+        if (r.ok) {
+            toast('✅ تم الحفظ — جاري إعادة التشغيل...');
+            addLog('ok', '📶 حفظ شبكة: ' + ssid);
+            setTimeout(() => location.reload(), 4000);
+        } else {
+            toast('❌ فشل الحفظ');
+        }
+    } catch(_) { toast('❌ خطأ في الاتصال'); }
+}
+
+// ════════════════════════════════════════════
+//  ⑤ Security Log (جديد)
+// ════════════════════════════════════════════
+const logItems = [];
+
+function addLog(level, text) {
+    const now = new Date();
+    const time = now.toLocaleTimeString('ar-SA');
+    logItems.unshift({ level, text, time });
+    if (logItems.length > 20) logItems.pop(); // احتفظ بـ 20 حدث فقط
+    renderLog();
+
+    // تحديث العدادات
+    if (level === 'ok' && text.includes('فتح')) {
+        const el = document.getElementById('statUnlocks');
+        el.textContent = parseInt(el.textContent || 0) + 1;
+        document.getElementById('lastUnlock').textContent = time;
+    }
+    if (level === 'fail') {
+        const el = document.getElementById('statFails');
+        el.textContent = parseInt(el.textContent || 0) + 1;
+    }
+}
+
+function renderLog() {
+    const list = document.getElementById('logList');
+    list.innerHTML = logItems.map(item => `
+        <div class="log-item ${item.level}">
+            <span class="log-icon">${item.level==='ok'?'✅':item.level==='fail'?'❌':'⚠️'}</span>
+            <div>
+                <div class="log-text">${item.text}</div>
+                <div class="log-time">${item.time}</div>
+            </div>
+        </div>`).join('');
+}
+
+function clearLog() {
+    logItems.length = 0;
+    renderLog();
+    toast('🗑 تم مسح السجل');
+}
+
+// ════════════════════════════════════════════
+//  ⑥ OTA Update (جديد)
+// ════════════════════════════════════════════
+async function startOTA() {
+    const file = document.getElementById('otaFile').files[0];
+    if (!file) { toast('⚠️ اختر ملف .bin أولاً'); return; }
+    if (!file.name.endsWith('.bin')) { toast('❌ الملف يجب أن يكون .bin'); return; }
+
+    const prog = document.getElementById('otaProgress');
+    const bar  = document.getElementById('otaBar');
+    prog.style.display = 'block';
+    bar.style.width = '0%';
+    toast('⬆️ جاري رفع التحديث...');
+    addLog('warn', '🔄 بدء رفع OTA: ' + file.name);
+
+    const formData = new FormData();
+    formData.append('firmware', file);
+
+    try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/ota');
+        xhr.setRequestHeader('X-Token', authToken);
+
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const pct = Math.round(e.loaded * 100 / e.total);
+                bar.style.width = pct + '%';
+            }
+        };
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                bar.style.width = '100%';
+                toast('✅ تم التحديث — جاري إعادة التشغيل...');
+                addLog('ok', '✅ تم رفع OTA بنجاح');
+                setTimeout(() => location.reload(), 6000);
+            } else {
+                toast('❌ فشل التحديث');
+                addLog('fail', '❌ فشل OTA');
+                prog.style.display = 'none';
+            }
+        };
+        xhr.onerror = () => { toast('❌ خطأ في الاتصال'); prog.style.display = 'none'; };
+        xhr.send(formData);
+    } catch(e) { toast('❌ خطأ'); }
+}
+
+// ════════════════════════════════════════════
+//  النظام
+// ════════════════════════════════════════════
+async function restartDevice() {
+    if (!confirm('هل أنت متأكد من إعادة التشغيل؟')) return;
+    try {
+        await fetch('/api/restart', { headers: { 'X-Token': authToken } });
+        toast('⚡ جاري إعادة التشغيل...');
+        addLog('warn', '⚡ طلب إعادة التشغيل');
+        setTimeout(() => location.reload(), 5000);
+    } catch(_) { toast('❌ فشل الطلب'); }
+}
+
+// ════════════════════════════════════════════
+//  مساعدات
+// ════════════════════════════════════════════
+function fmtUptime(s) {
+    const h = Math.floor(s/3600);
+    const m = Math.floor((s%3600)/60);
+    const ss = s % 60;
+    return `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+
+let toastTimer;
+function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ════════════════════════════════════════════
+//  التشغيل
+// ════════════════════════════════════════════
+window.addEventListener('load', () => {
+    // تهيئة شريط السطوع
+    syncBrightness(180);
+    // الاتصال بالجهاز
+    connectWS();
+    // تحديث sysinfo كل 15 ثانية
+    setInterval(() => { if(wsReady) wsSend({ cmd: 'sysinfo' }); }, 15000);
+});
+
+// PWA ServiceWorker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+
+</body>
+</html>
